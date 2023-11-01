@@ -17,9 +17,7 @@ const server = http.createServer((req, res) => {
     res.write('<h1>Following are the titles of given websites:</h1>');
     res.write('<ul>');
 
-    let completedRequests = 0;
-
-    function getTitle(address) {
+    const getTitle = (address) => {
       const deferred = Q.defer();
       const url = address.startsWith('http') ? address : `http://${address}`;
 
@@ -32,23 +30,18 @@ const server = http.createServer((req, res) => {
           res.write(`<li>${address} - NO RESPONSE</li>`);
         }
 
-        completedRequests++;
         deferred.resolve();
-
-        if (completedRequests === addresses.length) {
-          res.write('</ul></body></html>');
-          res.end();
-        }
       });
 
       return deferred.promise;
-    }
+    };
 
     const promises = addresses.map((address) => getTitle(address));
 
     Q.all(promises)
       .then(() => {
-        // This block will execute after all promises are resolved
+        res.write('</ul></body></html>');
+        res.end();
       })
       .catch((err) => {
         res.writeHead(500);
